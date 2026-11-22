@@ -1,0 +1,32 @@
+# 依存関係・ビルド成果物
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# AWS CDK の出力（docs/12）
+cdk.out/
+
+# ログ
+*.log
+
+# 環境変数（サンプルは管理する）
+.env
+.env.*
+!.env.example
+
+# IDE・OS
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Claude Code の個人設定
+.claude/settings.local.json
+
+# E2E テストの結果（docs/08）
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
