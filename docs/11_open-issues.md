@@ -47,4 +47,4 @@
 - AWS CDK が ECS Express Mode に対応しているか（[AWS 構成](12_aws-architecture.md#作成と削除)）
 - 費用の見積もり（AWS Pricing Calculator。[AWS 構成](12_aws-architecture.md#費用の目安)）
 - 各ライブラリの最新安定版（[技術スタック](07_tech-stack.md)）
-- git リポジトリの初期化と GitHub リポジトリの作成、ブランチ保護の設定
+- ~~git リポジトリの初期化と GitHub リポジトリの作成、ブランチ保護の設定~~：2026-11-23 に完了。main は CI の 4 ジョブ（lint・test・build・e2e）を必須チェックにし、管理者にも適用している
