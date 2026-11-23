@@ -37,3 +37,6 @@ next-env.d.ts
 *.pem
 .vercel
 npm-debug.log*
+
+# Prisma が生成するクライアント（npm install 時に prisma generate で作る）
+/src/generated/

@@ -1,0 +1,12 @@
+// データモデルは docs/05_data-model.md。
+// モデル名は PascalCase、テーブル名・列名は snake_case（@@map / @map で対応させる）。
+// テーブルは使う Issue（#5 の users から）で追加する。
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
