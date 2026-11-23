@@ -40,3 +40,6 @@ npm-debug.log*
 
 # Prisma が生成するクライアント（npm install 時に prisma generate で作る）
 /src/generated/
+
+# Vitest の結果（CI の artifact。docs/09）
+test-reports/

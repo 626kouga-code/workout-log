@@ -18,7 +18,7 @@ GitHub Actions を使う。
 
 | ジョブ | 内容 | コマンド |
 | --- | --- | --- |
-| `lint` | 静的解析（ESLint）と型チェック | `npm run lint`、`npm run typecheck` |
+| `lint` | 静的解析（ESLint）、型チェック、書式（Prettier） | `npm run lint`、`npm run typecheck`、`npm run format:check` |
 | `test` | 単体・結合・画面のテスト（MySQL をサービスコンテナで起動する） | `npx prisma migrate deploy`、`npm test` |
 | `build` | 本番ビルド | `npm run build` |
 | `e2e` | Playwright の E2E テスト（MySQL・S3Mock・Mailpit を起動し、本番ビルドに対して流す） | `npm run test:e2e` |
