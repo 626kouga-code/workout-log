@@ -2,6 +2,8 @@
 
 Workout Log（筋トレ記録＋SNS の Web アプリ）。要件定義書は [docs/README.md](docs/README.md)。
 
+Next.js 16 は以前の版と書き方が変わっている。コードを書く前に [AGENTS.md](AGENTS.md) の指示に従い、`node_modules/next/dist/docs/` の該当ガイドを読む。
+
 ## Issue登録
 
 - バグ報告・機能追加は、作業を始める前に必ずGitHub Issueを登録する。
