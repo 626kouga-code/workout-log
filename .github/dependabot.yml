@@ -1,0 +1,29 @@
+# 依存の更新を週 1 回確認する（docs/09_ci-cd.md）。
+# Dependabot の PR は Issue・ブランチ命名ルールの例外で、CI が通ればマージしてよい（CLAUDE.md）。
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      timezone: Asia/Tokyo
+    commit-message:
+      prefix: chore
+      include: scope # → "chore(deps): ..."
+    groups:
+      # minor・patch はまとめて 1 本の PR にする（major は個別に確認する）
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      timezone: Asia/Tokyo
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      github-actions:
+        patterns: ["*"]
