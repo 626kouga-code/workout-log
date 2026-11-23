@@ -26,6 +26,28 @@
 | 日付処理 | date-fns（date-fns-tz） | 日本時間の「実施日」の扱い、週の区切り |
 | 実行環境 | Node.js 24 | |
 
+### バージョン
+
+2026-11-23 に確認した最新安定版。プレリリース版（rc・beta）は使わない。ここにないライブラリは、そのライブラリを使う Issue に着手するときに確認して書き足す。
+
+| 技術 | バージョン | 備考 |
+| --- | --- | --- |
+| Node.js | 24.x | |
+| Next.js | 16.4 | `cacheComponents` を有効にしている（create-next-app の既定） |
+| React | 19.3 | |
+| TypeScript | 6.0 | 最新は 7.0 だが、typescript-eslint が 6.0 までしか対応していないため |
+| Tailwind CSS | 4.3 | |
+| ESLint | 9.39 | 最新は 10 だが、eslint-config-next が使うプラグイン（react・import・jsx-a11y）が 9 までしか対応していないため |
+| Prettier | 3.10 | |
+| Vitest | 5.1 | Windows でドライブ名が小文字（`c:\`）だと動かないため、`scripts/vitest.mjs` を通して起動する |
+| Playwright | 1.65 | |
+| Prisma | 7.10 | 最新タグは 8.0 の rc のため、安定版の 7 系にする（[#2](https://github.com/626kouga-code/workout-log/issues/2)） |
+
+着手時に決めるもの：
+
+- **Auth.js**：安定版は v4（`next-auth` 4.24）、v5 は beta のまま。また、Credentials プロバイダーは DB セッションに標準では対応していない。どちらも [#5](https://github.com/626kouga-code/workout-log/issues/5) で決める
+- **日本時間の扱い**：date-fns 4 には公式の `@date-fns/tz` がある。date-fns-tz とどちらを使うか [#4](https://github.com/626kouga-code/workout-log/issues/4) で決める
+
 ## 選定理由（SNSアプリとの比較）
 
 同じ開発者による「SNSアプリ」とは、意図的に構成を変えている。
