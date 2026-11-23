@@ -41,7 +41,7 @@
 | Prettier | 3.10 | |
 | Vitest | 5.1 | Windows でドライブ名が小文字（`c:\`）だと動かないため、`scripts/vitest.mjs` を通して起動する |
 | Playwright | 1.65 | |
-| Prisma | 7.10 | 最新タグは 8.0 の rc のため、安定版の 7 系にする（[#2](https://github.com/626kouga-code/workout-log/issues/2)） |
+| Prisma | 7.10 | 最新タグは 8.0 の rc のため、安定版の 7 系にする。MySQL にはドライバーアダプター `@prisma/adapter-mariadb` でつなぐ（Prisma 7 の方式）。MySQL 8.4 の認証方式のため `allowPublicKeyRetrieval` を有効にしている（`src/server/db-config.ts`） |
 
 着手時に決めるもの：
 
@@ -74,9 +74,10 @@
 | S3Mock | 画像の保存先（S3 互換） | `9090` |
 | Mailpit | 送信メールの受信確認（受信箱は http://localhost:8025） | `1025`（SMTP）、`8025`（Web UI） |
 
-想定する手順（実装時に README に書く）：
+手順の詳細はリポジトリ直下の [README](../README.md) にある：
 
 ```bash
+cp .env.example .env          # 環境変数
 docker compose up -d          # MySQL、S3Mock、Mailpit を起動
 npm install
 npx prisma migrate dev        # テーブル作成とプリセット種目の投入
