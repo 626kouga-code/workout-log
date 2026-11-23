@@ -23,7 +23,7 @@
 | メール送信 | Nodemailer（本番は AWS SES の SMTP、ローカルは Mailpit） | メールアドレス確認（F-02）のメール |
 | 端末への保存 | IndexedDB（Dexie.js） | 圏外での記録と送信待ちの変更の保存（F-16） |
 | PWA | Web App Manifest、Service Worker（Serwist） | ホーム画面への追加、静的ファイルのキャッシュ |
-| 日付処理 | date-fns（date-fns-tz） | 日本時間の「実施日」の扱い、週の区切り |
+| 日付処理 | date-fns ＋ @date-fns/tz | 日本時間の「実施日」の扱い、週の区切り（月曜始まり）。`src/lib/date.ts` にまとめる |
 | 実行環境 | Node.js 24 | |
 
 ### バージョン
@@ -42,11 +42,13 @@
 | Vitest | 5.1 | Windows でドライブ名が小文字（`c:\`）だと動かないため、`scripts/vitest.mjs` を通して起動する |
 | Playwright | 1.65 | |
 | Prisma | 7.10 | 最新タグは 8.0 の rc のため、安定版の 7 系にする。MySQL にはドライバーアダプター `@prisma/adapter-mariadb` でつなぐ（Prisma 7 の方式）。MySQL 8.4 の認証方式のため `allowPublicKeyRetrieval` を有効にしている（`src/server/db-config.ts`） |
+| Zod | 4.6 | |
+| uuid | 14 | UUIDv7 の生成（`src/lib/id.ts`）。ブラウザでも使う |
+| date-fns / @date-fns/tz | 4.4 / 1.5 | date-fns 4 の公式のタイムゾーン対応。date-fns-tz は使わない |
 
 着手時に決めるもの：
 
 - **Auth.js**：安定版は v4（`next-auth` 4.24）、v5 は beta のまま。また、Credentials プロバイダーは DB セッションに標準では対応していない。どちらも [#5](https://github.com/626kouga-code/workout-log/issues/5) で決める
-- **日本時間の扱い**：date-fns 4 には公式の `@date-fns/tz` がある。date-fns-tz とどちらを使うか [#4](https://github.com/626kouga-code/workout-log/issues/4) で決める
 
 ## 選定理由（SNSアプリとの比較）
 

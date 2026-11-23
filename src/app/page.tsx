@@ -1,7 +1,5 @@
-export default function Home() {
-  return (
-    <main className="flex flex-1 items-center justify-center p-4">
-      <h1 className="text-2xl font-bold">Workout Log</h1>
-    </main>
-  );
+import { PagePlaceholder } from "@/components/page-placeholder";
+
+export default function HomePage() {
+  return <PagePlaceholder title="ホーム" issue="#23 タイムライン" />;
 }
