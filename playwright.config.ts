@@ -26,5 +26,7 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !isCI,
     timeout: 180_000,
+    // 本番ビルドを http://localhost で動かすため、セッションの Cookie に Secure 属性を付けない
+    env: { SESSION_COOKIE_SECURE: "false" },
   },
 });

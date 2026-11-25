@@ -21,3 +21,17 @@ body {
     "Yu Gothic UI",
     sans-serif;
 }
+
+/* 利用規約・プライバシーポリシーなどの文章のページ */
+.legal {
+  @apply flex flex-col gap-3 leading-relaxed;
+}
+.legal h1 {
+  @apply text-xl font-bold;
+}
+.legal h2 {
+  @apply mt-4 font-bold;
+}
+.legal ul {
+  @apply list-disc pl-6;
+}
