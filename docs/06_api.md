@@ -45,7 +45,9 @@ Next.js のフルスタック構成のため、SNSアプリのような「フロ
 | | `deleteAccount({ password })` | 退会。成功したらログアウトしてトップへ移る（F-06） |
 | | `updateProfile` | 表示名・自己紹介・アイコンの変更 |
 | | `updateSettings` | 画面スリープ防止の切り替え |
-| 種目 | `createExercise` `updateExercise` `hideExercise` | 自分の種目の追加・編集・非表示 |
+| 種目 | `createExerciseAction` `updateExerciseAction` | 自分の種目の追加・編集 |
+| | `hideExerciseAction` `unhideExerciseAction` | 自分の種目の非表示・再表示 |
+| | `deleteExerciseAction` | 自分の種目の削除。記録・メニューで使っている種目は削除できない（CONFLICT） |
 | ワークアウト | `updateWorkout` `deleteWorkout` | 終了済みのワークアウトの実施日・メモ・セットの修正、削除（F-14） |
 
 ワークアウトの開始から終了までの操作（記録中の操作）は、圏外でも使えるよう Server Actions にせず、[記録中のデータの同期](#記録中のデータの同期)で扱う。

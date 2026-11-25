@@ -17,6 +17,7 @@ cp .env.example .env      # 環境変数（そのままでローカルの Docker
 docker compose up -d      # MySQL・S3Mock・Mailpit を起動
 npm install               # 依存関係を入れる（Prisma のクライアントも生成される）
 npx prisma migrate dev    # テーブルを作る
+npx prisma db seed        # 初期データ（プリセット種目 36 件）を入れる
 npm run dev               # http://localhost:3000
 ```
 
@@ -43,10 +44,11 @@ npm run dev               # http://localhost:3000
 | `npm test` | 単体・画面のテスト（Vitest） |
 | `npm run test:e2e` | E2E テスト（Playwright。本番ビルドを作ってから流す。Docker のサービスを起動しておく） |
 | `npx prisma migrate dev` | スキーマの変更からマイグレーションを作って適用 |
+| `npx prisma db seed` | 初期データ（プリセット種目）を入れる。何度流しても同じ結果になる |
 | `npx prisma studio` | DB の中身をブラウザで見る |
 | `docker compose down` | サービスを止める（データは残る。`-v` を付けると DB も消える） |
 
 ## 困ったとき
 
 - **`npx playwright test` でブラウザがないと言われる**：`npx playwright install chromium webkit`
-- **DB を作り直したい**：`docker compose down -v` → `docker compose up -d` → `npx prisma migrate dev`
+- **DB を作り直したい**：`docker compose down -v` → `docker compose up -d` → `npx prisma migrate dev` → `npx prisma db seed`
