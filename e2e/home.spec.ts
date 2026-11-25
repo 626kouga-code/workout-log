@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { signUp } from "./helpers/auth";
 
 const TABS = [
   { label: "記録", path: "/workouts" },
@@ -9,7 +10,8 @@ const TABS = [
 ];
 
 test("ナビゲーションのタブで画面を行き来できる", async ({ page }) => {
-  await page.goto("/");
+  // 記録・進捗などはログインが必要なため、登録してから（登録後はホームが開く）
+  await signUp(page);
   const nav = page.getByRole("navigation", { name: "メイン" });
   await expect(nav).toBeVisible();
 
@@ -30,7 +32,7 @@ test("スマホでは画面下部、PC では左側にナビを出す", async ({
   page,
   isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/explore");
   const box = await page
     .getByRole("navigation", { name: "メイン" })
     .boundingBox();

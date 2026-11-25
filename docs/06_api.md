@@ -23,7 +23,6 @@ Next.js のフルスタック構成のため、SNSアプリのような「フロ
 
 | 分類 | メソッドとパス | 概要 |
 | --- | --- | --- |
-| 認証 | `GET/POST /api/auth/[...nextauth]` | Auth.js が提供するログイン・ログアウト・セッション取得 |
 | タイムライン | `GET /api/timeline/home` `GET /api/timeline/explore` | ホーム／全体タイムラインの続き（無限スクロール） |
 | | `GET /api/timeline/home/new-count?since=<id>` `GET /api/timeline/explore/new-count?since=<id>` | 新着件数（`since` より新しい、自分以外の投稿の数。30 秒ごとに取得する。F-57） |
 | 投稿 | `GET /api/users/[handle]/posts` | プロフィールの投稿一覧の続き |
@@ -38,7 +37,9 @@ Next.js のフルスタック構成のため、SNSアプリのような「フロ
 
 | 分類 | 関数 | 概要 |
 | --- | --- | --- |
-| アカウント | `signUp` | 新規登録（続けてログインし、確認メールを送る） |
+| アカウント | `signUpAction` | 新規登録（続けてログインし、確認メールを送る） |
+| | `logInAction(input, next)` | ログイン。成功したら `next`（自サイト内のパスだけ）かホームへ移る（F-03） |
+| | `logOutAction` | ログアウト。セッションを削除してログイン画面へ移る（F-03） |
 | | `verifyEmail({ token })` | メールアドレスの確認（確認リンクの着地ページから呼ぶ。F-02） |
 | | `resendVerificationEmail` | 確認メールの再送（1 分に 1 回まで） |
 | | `deleteAccount({ password })` | 退会。成功したらログアウトしてトップへ移る（F-06） |

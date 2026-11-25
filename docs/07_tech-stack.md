@@ -14,8 +14,8 @@
 | クライアント側のデータ取得 | TanStack Query | 無限スクロールのタイムライン・履歴、通知の未読数の定期取得に使う |
 | DB | MySQL 8.4 LTS | AWS では RDS for MySQL を想定する |
 | ORM・マイグレーション | Prisma | スキーマから TypeScript の型を生成する。マイグレーションとシード（プリセット種目）も Prisma で行う |
-| 認証 | Auth.js（Credentials プロバイダー、Prisma アダプター） | メール＋パスワード。セッションは DB に保存する |
-| パスワードのハッシュ化 | bcrypt | |
+| 認証 | 自作の DB セッション（Cookie ＋ sessions テーブル） | メール＋パスワード。`src/server/auth/` にまとめる。選んだ理由は下の「認証の方式」 |
+| パスワードのハッシュ化 | bcryptjs | bcrypt の純 JavaScript 版。ネイティブのビルドが要らない（コスト 12） |
 | 入力検証 | Zod | 画面のフォームとサーバーで同じスキーマを使う。フォームは React Hook Form と組み合わせる |
 | グラフ | Recharts | 種目別の推移、体重、週間サマリー |
 | 画像処理 | sharp | 形式の判定、Exif の除去、向きの補正、リサイズ、WebP への変換 |
@@ -45,10 +45,17 @@
 | Zod | 4.6 | |
 | uuid | 14 | UUIDv7 の生成（`src/lib/id.ts`）。ブラウザでも使う |
 | date-fns / @date-fns/tz | 4.4 / 1.5 | date-fns 4 の公式のタイムゾーン対応。date-fns-tz は使わない |
+| bcryptjs | 3.0 | 2026-11-25 に確認 |
+| React Hook Form / @hookform/resolvers | 7.92 / 7.0 | 2026-11-25 に確認 |
 
-着手時に決めるもの：
+### 認証の方式
 
-- **Auth.js**：安定版は v4（`next-auth` 4.24）、v5 は beta のまま。また、Credentials プロバイダーは DB セッションに標準では対応していない。どちらも [#5](https://github.com/626kouga-code/workout-log/issues/5) で決める
+2026-11-25 に決定（[#5](https://github.com/626kouga-code/workout-log/issues/5)）。当初は Auth.js を予定していたが、**セッションを自作する**ことにした。
+
+- Auth.js の安定版（v4）は、メール＋パスワード（Credentials プロバイダー）では DB セッションを使えず、JWT（Cookie だけで持つ方式）になる。ログアウトしてもサーバー側で無効にできず、要件（[非機能要件](03_non-functional-requirements.md)）に合わない
+- v5 は beta のままで、プレリリース版は使わない方針に反する
+- 自作でも、乱数のトークンを Cookie に入れ、DB にはそのハッシュを持つだけで済む（Next.js の公式ガイドが紹介している形）
+- ログインが必要な画面は 2 段で守る：`src/proxy.ts` が Cookie の有無だけを見て先に振り分け、各画面の `requireUser()` が DB で確かめる
 
 ## 選定理由（SNSアプリとの比較）
 
@@ -58,7 +65,7 @@
 | --- | --- | --- | --- |
 | 構成 | フロント（React + Vite）と API（Spring Boot）の分離型 | Next.js のフルスタック一体型 | 別の構成を経験するため。1 つの言語・1 つのプロジェクトで済み、記録・グラフ・タイマー・SNS と機能が多くても作り切りやすい |
 | バックエンドの言語 | Java | TypeScript | 画面とサーバーで型（Zod のスキーマ・Prisma の型）を共有できる |
-| 認証 | JWT（メモリ）＋リフレッシュトークン（Cookie）を自作 | Auth.js のセッション（Cookie） | 同じドメインで動く一体型なので、トークンを持ち回る必要がない |
+| 認証 | JWT（メモリ）＋リフレッシュトークン（Cookie）を自作 | DB のセッション（Cookie）を自作 | 同じドメインで動く一体型なので、トークンを持ち回る必要がない。ログアウトでセッションを確実に無効にできる |
 | DB | PostgreSQL | MySQL | 別の DB を経験するため。集計（自己ベスト・グラフ）と SNS の関係データの両方に向くリレーショナル DB から選んだ |
 | DB アクセス | Spring Data JPA ＋ Flyway | Prisma | スキーマ定義・型生成・マイグレーションを 1 つの道具で行える |
 | API の形 | REST（OpenAPI で仕様書を生成） | Server Actions 中心 | 画面からサーバーの関数を直接呼べるので、API の定義を別に書かずに済む |

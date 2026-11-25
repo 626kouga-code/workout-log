@@ -1,7 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
-import { AppNav } from "@/components/nav/app-nav";
-import { NavView } from "@/components/nav/nav-view";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,20 +13,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/**
+ * すべての画面の外枠。ナビゲーションは画面のグループごとのレイアウトで付ける。
+ * - (main)：ナビ付きの画面（ホーム・記録など）
+ * - (plain)：ナビなしの画面（ログイン・新規登録・規約）
+ */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full">
-        {/* 現在の URL は、表示する画面によってはリクエスト時まで分からないため、
-            Suspense で囲み、分かるまではタブを強調しないナビを出しておく */}
-        <Suspense fallback={<NavView pathname={null} />}>
-          <AppNav />
-        </Suspense>
-        {/* スマホはタブバーの高さ分を下に、PC は左ナビの幅分を左に空ける */}
-        <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-56">
-          {children}
-        </div>
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }
