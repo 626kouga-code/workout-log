@@ -14,6 +14,8 @@ import { db } from "@/server/db";
 const NAME_TAKEN = "同じ名前の種目があります";
 const NAME_TAKEN_HIDDEN =
   "非表示にした種目に同じ名前があります。非表示の種目から再表示できます";
+const KIND_LOCKED =
+  "記録で使っている種目は種別を変えられません。別の種目として追加してください";
 const IN_USE =
   "記録やメニューで使っているため削除できません。代わりに非表示にしてください";
 
@@ -72,13 +74,22 @@ export async function createExercise(
   }
 }
 
-/** 自分の種目を編集する。プリセット・他人の種目は NOT_FOUND */
+/**
+ * 自分の種目を編集する。プリセット・他人の種目は NOT_FOUND。
+ * 記録で使っている種目は種別を変えられない（過去のセットの意味が変わってしまうため）。
+ */
 export async function updateExercise(
   userId: string,
   exerciseId: string,
   input: ExerciseData,
 ): Promise<ExerciseItem> {
-  await findOwnExercise(userId, exerciseId);
+  const current = await findOwnExercise(userId, exerciseId);
+  if (current.kind !== input.kind) {
+    const used = await db.workoutExercise.count({ where: { exerciseId } });
+    if (used > 0) {
+      throw new AppError("CONFLICT", undefined, { kind: [KIND_LOCKED] });
+    }
+  }
   await assertNameAvailable(userId, input.name, exerciseId);
   try {
     const row = await db.exercise.update({
@@ -143,7 +154,7 @@ export async function deleteExercise(
 async function findOwnExercise(userId: string, exerciseId: string) {
   const row = await db.exercise.findFirst({
     where: { id: exerciseId, userId },
-    select: { id: true },
+    select: { id: true, kind: true },
   });
   if (!row) throw new AppError("NOT_FOUND", "種目が見つかりませんでした");
   return row;
