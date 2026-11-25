@@ -69,6 +69,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx prisma migrate deploy
+      - run: npx prisma db seed
       - run: npm test -- --reporter=default --reporter=junit --outputFile.junit=test-reports/junit.xml
       - name: テスト結果を残す（失敗したときだけ）
         if: failure()
@@ -129,6 +130,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx prisma migrate deploy
+      - run: npx prisma db seed
       - name: Playwright のブラウザを入れる
         run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e

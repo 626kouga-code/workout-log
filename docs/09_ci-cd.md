@@ -19,7 +19,7 @@ GitHub Actions を使う。
 | ジョブ | 内容 | コマンド |
 | --- | --- | --- |
 | `lint` | 静的解析（ESLint）、型チェック、書式（Prettier） | `npm run lint`、`npm run typecheck`、`npm run format:check` |
-| `test` | 単体・結合・画面のテスト（MySQL をサービスコンテナで起動する） | `npx prisma migrate deploy`、`npm test` |
+| `test` | 単体・結合・画面のテスト（MySQL をサービスコンテナで起動する） | `npx prisma migrate deploy`、`npx prisma db seed`、`npm test` |
 | `build` | 本番ビルド | `npm run build` |
 | `e2e` | Playwright の E2E テスト（MySQL・S3Mock・Mailpit を起動し、本番ビルドに対して流す） | `npm run test:e2e` |
 
@@ -39,7 +39,7 @@ GitHub Actions を使う。
 
 | ワークフロー | 内容 |
 | --- | --- |
-| `aws-up` | ① AWS CDK で環境（ネットワーク・RDS・S3・ECR など）を作る → ② コンテナイメージを作って ECR に置く → ③ ECS Express Mode のサービスを作る・更新する → ④ データベースのマイグレーション（`prisma migrate deploy`）を流す → ⑤ 公開 URL を出力する |
+| `aws-up` | ① AWS CDK で環境（ネットワーク・RDS・S3・ECR など）を作る → ② コンテナイメージを作って ECR に置く → ③ ECS Express Mode のサービスを作る・更新する → ④ データベースのマイグレーション（`prisma migrate deploy`）と初期データ（`prisma db seed`）を流す → ⑤ 公開 URL を出力する |
 | `aws-down` | ① RDS の最終スナップショットを取る → ② 環境を全部消す。S3 の画像を残すかどうかを入力で選べる |
 
 - `aws-up` には「前回のスナップショットから復元するか」を入力で選べるようにする

@@ -47,6 +47,7 @@
 | date-fns / @date-fns/tz | 4.4 / 1.5 | date-fns 4 の公式のタイムゾーン対応。date-fns-tz は使わない |
 | bcryptjs | 3.0 | 2026-11-25 に確認 |
 | React Hook Form / @hookform/resolvers | 7.92 / 7.0 | 2026-11-25 に確認 |
+| tsx | 4.23 | 2026-11-25 に確認。TypeScript のシード（`prisma/seed.ts`）を動かす |
 | Nodemailer | 10.6 | 2026-11-25 に確認。確認メールのリンクには環境変数 `APP_URL` を使う |
 
 ### 認証の方式
@@ -90,7 +91,8 @@
 cp .env.example .env          # 環境変数
 docker compose up -d          # MySQL、S3Mock、Mailpit を起動
 npm install
-npx prisma migrate dev        # テーブル作成とプリセット種目の投入
+npx prisma migrate dev        # テーブル作成
+npx prisma db seed            # プリセット種目の投入
 npm run dev                   # http://localhost:3000
 ```
 

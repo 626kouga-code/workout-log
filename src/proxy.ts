@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/server/auth/cookie-name";
 
 /** ログインが必要な画面（先頭がこれに一致するパス） */
-const MEMBER_PATHS = ["/workouts", "/progress", "/notifications", "/profile"];
+const MEMBER_PATHS = [
+  "/workouts",
+  "/exercises",
+  "/progress",
+  "/notifications",
+  "/profile",
+];
 
 const matches = (pathname: string, base: string) =>
   pathname === base || pathname.startsWith(`${base}/`);

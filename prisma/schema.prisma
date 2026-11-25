@@ -29,6 +29,7 @@ model User {
 
   sessions           Session[]
   emailVerifications EmailVerification[]
+  exercises          Exercise[]
 
   @@map("users")
 }
@@ -60,4 +61,24 @@ model EmailVerification {
 
   @@index([userId])
   @@map("email_verifications")
+}
+
+// ---- トレーニング ----
+
+/// 種目（exercises）。user_id が NULL ならプリセット（全員が使える種目。シードで投入する）
+/// 部位・種別は MySQL の ENUM 型にせず文字列で持ち、値はアプリ側（src/lib/exercise.ts）で縛る
+model Exercise {
+  id        String    @id @db.Char(36)
+  userId    String?   @map("user_id") @db.Char(36)
+  name      String    @db.VarChar(30)
+  bodyPart  String    @map("body_part") @db.VarChar(20)
+  kind      String    @db.VarChar(20)
+  hiddenAt  DateTime? @map("hidden_at") @db.DateTime(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("exercises")
 }
