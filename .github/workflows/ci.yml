@@ -16,6 +16,7 @@ permissions:
 
 # ローカル（.env.example）と同じ値。CI の中だけで使うダミーで、秘密情報ではない。
 env:
+  APP_URL: http://localhost:3000
   DATABASE_URL: mysql://workout:workout@localhost:3306/workout_log
   DATABASE_URL_TEST: mysql://workout:workout@localhost:3306/workout_log
   S3_ENDPOINT: http://localhost:9090

@@ -47,6 +47,7 @@
 | date-fns / @date-fns/tz | 4.4 / 1.5 | date-fns 4 の公式のタイムゾーン対応。date-fns-tz は使わない |
 | bcryptjs | 3.0 | 2026-11-25 に確認 |
 | React Hook Form / @hookform/resolvers | 7.92 / 7.0 | 2026-11-25 に確認 |
+| Nodemailer | 10.6 | 2026-11-25 に確認。確認メールのリンクには環境変数 `APP_URL` を使う |
 
 ### 認証の方式
 

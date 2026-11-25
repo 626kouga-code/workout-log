@@ -27,7 +27,8 @@ model User {
   keepScreenAwake Boolean   @default(true) @map("keep_screen_awake")
   createdAt       DateTime  @default(now()) @map("created_at") @db.DateTime(3)
 
-  sessions Session[]
+  sessions           Session[]
+  emailVerifications EmailVerification[]
 
   @@map("users")
 }
@@ -44,4 +45,19 @@ model Session {
 
   @@index([userId])
   @@map("sessions")
+}
+
+/// メールアドレス確認（email_verifications）。確認リンクのトークンそのものは保存せず、SHA-256 のハッシュだけを持つ（F-02）
+model EmailVerification {
+  id        String    @id @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at") @db.DateTime(3)
+  usedAt    DateTime? @map("used_at") @db.DateTime(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verifications")
 }

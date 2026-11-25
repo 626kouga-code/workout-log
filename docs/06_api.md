@@ -40,8 +40,8 @@ Next.js のフルスタック構成のため、SNSアプリのような「フロ
 | アカウント | `signUpAction` | 新規登録（続けてログインし、確認メールを送る） |
 | | `logInAction(input, next)` | ログイン。成功したら `next`（自サイト内のパスだけ）かホームへ移る（F-03） |
 | | `logOutAction` | ログアウト。セッションを削除してログイン画面へ移る（F-03） |
-| | `verifyEmail({ token })` | メールアドレスの確認（確認リンクの着地ページから呼ぶ。F-02） |
-| | `resendVerificationEmail` | 確認メールの再送（1 分に 1 回まで） |
+| | `verifyEmailAction(token)` | メールアドレスの確認（確認リンクの着地ページのボタンから呼ぶ。結果は `verified`・`expired`・`used`・`invalid`。F-02） |
+| | `resendVerificationEmailAction` | 確認メールの再送（1 分に 1 回まで） |
 | | `deleteAccount({ password })` | 退会。成功したらログアウトしてトップへ移る（F-06） |
 | | `updateProfile` | 表示名・自己紹介・アイコンの変更 |
 | | `updateSettings` | 画面スリープ防止の切り替え |
