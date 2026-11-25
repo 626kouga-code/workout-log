@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import { VerifyEmailBanner } from "@/components/auth/verify-email-banner";
 import { AppNav } from "@/components/nav/app-nav";
 import { NavView } from "@/components/nav/nav-view";
 
@@ -13,6 +14,10 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       </Suspense>
       {/* スマホはタブバーの高さ分を下に、PC は左ナビの幅分を左に空ける */}
       <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-56">
+        {/* ログイン中かを調べるまでは何も出さない */}
+        <Suspense fallback={null}>
+          <VerifyEmailBanner />
+        </Suspense>
         {children}
       </div>
     </>
