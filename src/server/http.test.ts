@@ -1,6 +1,46 @@
 import { describe, expect, it, vi } from "vitest";
 import { AppError } from "@/lib/errors";
-import { errorResponse, errorResponseFrom } from "./http";
+import { errorResponse, errorResponseFrom, isSameOrigin } from "./http";
+
+describe("isSameOrigin", () => {
+  const request = (headers: Record<string, string>) =>
+    new Request("http://localhost:3000/api/workouts/sync", {
+      method: "POST",
+      headers,
+    });
+
+  it("Origin とリクエスト先のホストが同じなら受け付ける", () => {
+    expect(
+      isSameOrigin(
+        request({ origin: "http://localhost:3000", host: "localhost:3000" }),
+      ),
+    ).toBe(true);
+  });
+
+  it("プロキシの後ろでは x-forwarded-host と比べる", () => {
+    expect(
+      isSameOrigin(
+        request({
+          origin: "https://app.example.com",
+          host: "10.0.0.5:3000",
+          "x-forwarded-host": "app.example.com",
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it.each([
+    [
+      "別のサイト",
+      { origin: "https://evil.example.com", host: "localhost:3000" },
+    ],
+    ["ポート違い", { origin: "http://localhost:4000", host: "localhost:3000" }],
+    ["Origin なし", { host: "localhost:3000" }],
+    ["Origin が壊れている", { origin: "not a url", host: "localhost:3000" }],
+  ])("%s は受け付けない", (_, headers) => {
+    expect(isSameOrigin(request(headers))).toBe(false);
+  });
+});
 
 describe("errorResponse", () => {
   it.each([

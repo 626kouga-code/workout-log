@@ -30,6 +30,9 @@ model User {
   sessions           Session[]
   emailVerifications EmailVerification[]
   exercises          Exercise[]
+  workouts           Workout[]
+  appliedChanges     AppliedChange[]
+  deletedRecords     DeletedRecord[]
 
   @@map("users")
 }
@@ -76,9 +79,97 @@ model Exercise {
   hiddenAt  DateTime? @map("hidden_at") @db.DateTime(3)
   createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(3)
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutExercises WorkoutExercise[]
 
   @@unique([userId, name])
   @@index([userId])
   @@map("exercises")
+}
+
+/// ワークアウト（workouts）。1 回のトレーニング。ID は端末で作った UUIDv7（F-16）
+model Workout {
+  id              String    @id @db.Char(36)
+  userId          String    @map("user_id") @db.Char(36)
+  /// 日本時間の日付
+  performedOn     DateTime  @map("performed_on") @db.Date
+  startedAt       DateTime  @map("started_at") @db.DateTime(3)
+  /// NULL なら記録中（1 ユーザーにつき 1 件まで。同期の処理で確かめる）
+  finishedAt      DateTime? @map("finished_at") @db.DateTime(3)
+  note            String    @default("") @db.VarChar(500)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  /// 端末で最後に変更した時刻。複数の端末で変えたとき、新しいほうを採用する
+  clientUpdatedAt DateTime  @map("client_updated_at") @db.DateTime(3)
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises WorkoutExercise[]
+
+  @@index([userId, performedOn])
+  @@index([userId, finishedAt])
+  @@map("workouts")
+}
+
+/// ワークアウトの種目（workout_exercises）。並び順は一意にしない（並べ替えの途中で一時的に重なるため）
+model WorkoutExercise {
+  id              String   @id @db.Char(36)
+  workoutId       String   @map("workout_id") @db.Char(36)
+  exerciseId      String   @map("exercise_id") @db.Char(36)
+  sortOrder       Int      @map("sort_order") @db.SmallInt
+  restSeconds     Int      @default(90) @map("rest_seconds") @db.SmallInt
+  clientUpdatedAt DateTime @map("client_updated_at") @db.DateTime(3)
+
+  workout  Workout      @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  /// 記録で使っている種目は削除できない（F-11）
+  exercise Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets     WorkoutSet[]
+
+  @@index([workoutId, sortOrder])
+  @@index([exerciseId])
+  @@map("workout_exercises")
+}
+
+/// セット（workout_sets）。種別ごとにどの項目を使うかは、アプリ側で検証する
+model WorkoutSet {
+  id                String    @id @db.Char(36)
+  workoutExerciseId String    @map("workout_exercise_id") @db.Char(36)
+  sortOrder         Int       @map("sort_order") @db.SmallInt
+  weightKg          Decimal?  @map("weight_kg") @db.Decimal(6, 2)
+  reps              Int?      @db.SmallInt
+  durationSeconds   Int?      @map("duration_seconds")
+  distanceM         Int?      @map("distance_m")
+  completedAt       DateTime? @map("completed_at") @db.DateTime(3)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  clientUpdatedAt   DateTime  @map("client_updated_at") @db.DateTime(3)
+
+  workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([workoutExerciseId, sortOrder])
+  @@map("workout_sets")
+}
+
+/// 反映済みの変更（applied_changes）。同じ変更が二重に送られても 2 回反映しないために覚えておく（7 日で消す）
+model AppliedChange {
+  changeId  String   @id @map("change_id") @db.Char(36)
+  userId    String   @map("user_id") @db.Char(36)
+  appliedAt DateTime @map("applied_at") @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, appliedAt])
+  @@map("applied_changes")
+}
+
+/// 削除の記録（deleted_records）。消したものへの遅れて届いた更新で、復活させないために覚えておく（7 日で消す）
+model DeletedRecord {
+  /// workout・workoutExercise・set
+  entity    String   @db.VarChar(20)
+  id        String   @db.Char(36)
+  userId    String   @map("user_id") @db.Char(36)
+  deletedAt DateTime @map("deleted_at") @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([entity, id])
+  @@index([userId, deletedAt])
+  @@map("deleted_records")
 }

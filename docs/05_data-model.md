@@ -40,6 +40,7 @@ erDiagram
     exercises ||--o{ workout_exercises : "used in"
     workout_exercises ||--o{ workout_sets : has
     users ||--o{ applied_changes : sends
+    users ||--o{ deleted_records : deletes
     users ||--o{ routines : creates
     routines ||--o{ routine_items : contains
     exercises ||--o{ routine_items : "used in"
@@ -68,6 +69,7 @@ erDiagram
 | ワークアウトの種目 | workout_exercises | トレーニング |
 | セット | workout_sets | トレーニング |
 | 反映済みの変更 | applied_changes | トレーニング |
+| 削除の記録 | deleted_records | トレーニング |
 | メニュー | routines | トレーニング |
 | メニューの項目 | routine_items | トレーニング |
 | 体重記録 | body_weights | 体重 |
@@ -171,7 +173,9 @@ erDiagram
 | 休憩秒数 | rest_seconds | SMALLINT | ○ | インターバルタイマーの秒数。既定値は 90 |
 | 端末での更新日時 | client_updated_at | DATETIME(3) | ○ | workouts と同じ |
 
-- (ワークアウトID, 並び順) で一意。種目IDにインデックス（集計用）。同じ種目を複数回並べてもよい
+- (ワークアウトID, 並び順) にインデックス。**一意にはしない**：並べ替えの途中では一時的に同じ番号が 2 つでき、複数の端末の変更が混ざると一意制約に当たって同期全体が失敗するため。表示は「並び順 → ID」の順に並べる
+- 種目IDにインデックス（集計用）。同じ種目を複数回並べてもよい
+- 種目への外部キーは「削除を拒否（Restrict）」。記録で使っている種目は削除できない（F-11）。そのため、自分の種目を記録で使ったユーザーを消すとき（退会 F-06）は、先にワークアウトを消してからユーザーを消す
 
 ### セット（workout_sets）
 
@@ -188,7 +192,7 @@ erDiagram
 | 作成日時 | created_at | DATETIME(3) | ○ | |
 | 端末での更新日時 | client_updated_at | DATETIME(3) | ○ | workouts と同じ |
 
-- (ワークアウトの種目ID, 並び順) で一意。種別ごとにどの項目が必須かは、アプリ側で検証する
+- (ワークアウトの種目ID, 並び順) にインデックス（一意にしない理由は workout_exercises と同じ）。種別ごとにどの項目が必須かは、アプリ側で検証する
 
 ### 反映済みの変更（applied_changes）
 
@@ -198,7 +202,20 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | 変更ID | change_id | CHAR(36) | ○ | 主キー。端末で生成する |
 | ユーザーID | user_id | CHAR(36) | ○ | → users |
-| 反映日時 | applied_at | DATETIME(3) | ○ | 7 日たったものは定期的に削除する |
+| 反映日時 | applied_at | DATETIME(3) | ○ | 7 日たったものは、そのユーザーの同期のついでに削除する |
+
+### 削除の記録（deleted_records）
+
+同期で削除したワークアウト・ワークアウトの種目・セットの ID を覚えておき、ほかの端末から遅れて届いた更新で「復活」させないようにする（[記録中のデータの同期](06_api.md#記録中のデータの同期)）。行を消しただけでは、遅れて届いた更新が新規作成に見えてしまうため。各テーブルに「削除済み」の列を持たせる方法と比べ、以後の履歴・集計の検索で除外が要らないので、こちらにした。
+
+| 論理名 | 物理名 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- | --- |
+| 種類 | entity | VARCHAR(20) | ○ | `workout`・`workoutExercise`・`set` |
+| ID | id | CHAR(36) | ○ | 削除したものの ID |
+| ユーザーID | user_id | CHAR(36) | ○ | → users |
+| 削除日時 | deleted_at | DATETIME(3) | ○ | 7 日たったものは、そのユーザーの同期のついでに削除する |
+
+- (種類, ID) が主キー。ワークアウトを消したときは、その中の種目・セットの ID も記録する
 
 ### メニュー（routines）
 
