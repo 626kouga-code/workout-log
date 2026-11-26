@@ -14,6 +14,9 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+    // Service Worker のキャッシュが他のテストに影響しないよう、ふだんは止めておく。
+    // 圏外で開き直すテスト（e2e/offline.spec.ts）だけ有効にする
+    serviceWorkers: "block",
   },
   // スマートフォン（iPhone 相当）と PC の 2 つの画面サイズで流す（docs/08_testing.md）
   projects: [

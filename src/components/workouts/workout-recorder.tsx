@@ -1,12 +1,12 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   addExercise,
   addSet,
+  findInProgressWorkout,
   finishWorkout,
   moveExercise,
   removeExercise,
@@ -22,27 +22,35 @@ import { flushOutbox } from "@/client/workouts/outbox";
 import { useAutoSync } from "@/client/workouts/use-auto-sync";
 import { useWorkout } from "@/client/workouts/use-workout";
 import { ExercisePicker } from "@/components/exercises/exercise-picker";
+import { goTo, OfflineSafeLink } from "@/components/offline-safe-link";
 import { toJstTime } from "@/lib/date";
+import { summaryPage } from "@/lib/offline-pages";
 import { NOTE_MAX_LENGTH } from "@/lib/validation/workout-sync";
+import { Elapsed } from "./elapsed";
 import { ExerciseCard, type ExerciseCardHandlers } from "./exercise-card";
+import { SyncStatus } from "./sync-status";
 
 /**
- * 記録画面（S-11）。端末のデータ（IndexedDB）を読んで表示し、操作は端末に保存してから送る。
+ * 記録画面（S-11）。記録中のワークアウト（常に 1 件まで）を端末のデータ（IndexedDB）から読んで表示し、
+ * 操作は端末に保存してから送る。
+ * URL を /workouts/current の 1 つにしているのは、圏外で始めたワークアウトでも、
+ * Service Worker が保存しておいた同じ画面で開けるようにするため。
  */
-export function WorkoutRecorder({
-  workoutId,
-  userId,
-}: {
-  workoutId: string;
-  userId: string;
-}) {
+export function WorkoutRecorder({ userId }: { userId: string }) {
   useAutoSync(userId);
   const router = useRouter();
+  // 読み込み中は undefined、記録中のものがなければ null
+  const inProgress = useLiveQuery(
+    async () => (await findInProgressWorkout()) ?? null,
+    [],
+  );
+  // 終了した直後は「記録中」ではなくなるが、完了画面へ移るまでは表示を続ける
+  const [finishingId, setFinishingId] = useState<string | null>(null);
+  const workoutId = finishingId ?? inProgress?.id;
   const view = useWorkout(workoutId);
   const exercises = useLiveQuery(() => localDb.exercises.toArray(), [], []);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmingFinish, setConfirmingFinish] = useState(false);
-  const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /** 端末に保存してから、送信待ちを送る */
@@ -73,48 +81,35 @@ export function WorkoutRecorder({
     onAddSet: (id) => void run(() => addSet(id)),
   };
 
-  async function finish() {
-    setFinishing(true);
+  async function finish(id: string) {
+    setFinishingId(id);
     setError(null);
     try {
-      await finishWorkout(workoutId);
+      await finishWorkout(id);
     } catch {
       setError("終了できませんでした");
-      setFinishing(false);
+      setFinishingId(null);
       return;
     }
     // 送り終えてから前回の記録を取り直す（次のワークアウトの初期値になる）
     void flushOutbox().then(() => refreshOfflineData());
-    router.push(`/workouts/${workoutId}/summary`);
+    goTo(router.push, summaryPage(id));
   }
 
-  if (view === undefined) {
+  if (inProgress === undefined || (workoutId && view === undefined)) {
     return <p className="px-4 py-6 text-sm text-neutral-500">読み込み中…</p>;
   }
-  if (view === null) {
+  if (!view) {
     return (
       <Message>
-        この端末にはこのワークアウトの記録がありません。
-        <Link href="/workouts" className="text-blue-600 underline">
+        記録中のワークアウトはありません。
+        <OfflineSafeLink href="/workouts" className="text-blue-600 underline">
           記録トップへ
-        </Link>
+        </OfflineSafeLink>
       </Message>
     );
   }
   const { workout } = view;
-  if (workout.finishedAt !== null && !finishing) {
-    return (
-      <Message>
-        このワークアウトは終了しています。
-        <Link
-          href={`/workouts/${workout.id}/summary`}
-          className="text-blue-600 underline"
-        >
-          結果を見る
-        </Link>
-      </Message>
-    );
-  }
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-3 px-3 pt-4 pb-40">
@@ -125,6 +120,8 @@ export function WorkoutRecorder({
           <Elapsed since={workout.startedAt} />
         </p>
       </header>
+
+      <SyncStatus />
 
       {error && (
         <p
@@ -181,8 +178,8 @@ export function WorkoutRecorder({
               </span>
               <button
                 type="button"
-                disabled={finishing}
-                onClick={finish}
+                disabled={finishingId !== null}
+                onClick={() => finish(workout.id)}
                 className="min-h-11 rounded-lg bg-blue-600 px-4 font-bold text-white disabled:opacity-50"
               >
                 終了する
@@ -234,28 +231,4 @@ function Message({ children }: { children: ReactNode }) {
       {children}
     </main>
   );
-}
-
-/** 開始からの経過時間（1 秒ごとに更新） */
-function Elapsed({ since }: { since: string }) {
-  const now = useNow();
-  const seconds = Math.max(0, Math.floor((now - Date.parse(since)) / 1000));
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    <span className="tabular-nums">
-      {h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`}
-    </span>
-  );
-}
-
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
 }

@@ -7,20 +7,17 @@ export const metadata: Metadata = { title: "記録中" };
 
 /**
  * 記録画面（S-11）。中身は端末のデータ（IndexedDB）から読むので、サーバーでは枠だけを作る。
+ * Service Worker がこの画面の HTML を保存しておき、圏外でも開けるようにする（src/app/sw.ts）。
  */
-export default function WorkoutPage({ params }: PageProps<"/workouts/[id]">) {
+export default function CurrentWorkoutPage() {
   return (
     <Suspense fallback={<p className="sr-only">読み込み中</p>}>
-      <Recorder params={params} />
+      <Recorder />
     </Suspense>
   );
 }
 
-async function Recorder({
-  params,
-}: {
-  params: PageProps<"/workouts/[id]">["params"];
-}) {
-  const [{ id }, user] = await Promise.all([params, requireUser()]);
-  return <WorkoutRecorder workoutId={id} userId={user.id} />;
+async function Recorder() {
+  const user = await requireUser();
+  return <WorkoutRecorder userId={user.id} />;
 }

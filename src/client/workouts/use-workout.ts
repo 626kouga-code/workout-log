@@ -57,8 +57,10 @@ export async function loadWorkout(id: string): Promise<WorkoutView | null> {
 
 /**
  * 端末のワークアウトを読み、変わるたびに読み直す。
- * 読み込み中は undefined、端末にないときは null。
+ * 読み込み中は undefined、端末にないとき（ID がないときも）は null。
  */
-export function useWorkout(id: string): WorkoutView | null | undefined {
-  return useLiveQuery(() => loadWorkout(id), [id]);
+export function useWorkout(
+  id: string | null | undefined,
+): WorkoutView | null | undefined {
+  return useLiveQuery(async () => (id ? loadWorkout(id) : null), [id]);
 }

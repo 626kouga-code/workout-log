@@ -57,7 +57,7 @@ test("ワークアウトを記録し、再読み込みしても残り、次回�
     .getByRole("group", { name: "終了の確認" })
     .getByRole("button", { name: "終了する" })
     .click();
-  await expect(page).toHaveURL(/\/workouts\/[0-9a-f-]{36}\/summary$/);
+  await expect(page).toHaveURL(/\/workouts\/summary\?id=[0-9a-f-]{36}$/);
   // 60×10 + 62.5×10
   await expect(page.getByText("1,225 kg")).toBeVisible();
   await expect(page.getByText("2 セット")).toBeVisible();
@@ -88,6 +88,6 @@ test("ワークアウトを記録し、再読み込みしても残り、次回�
 });
 
 test("ログインしていなければ、記録画面はログイン画面へ", async ({ page }) => {
-  await page.goto("/workouts/0190a000-0000-7000-8000-000000000001");
+  await page.goto("/workouts/current");
   await expect(page).toHaveURL(/\/login\?next=/);
 });
