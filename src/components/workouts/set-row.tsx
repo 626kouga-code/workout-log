@@ -20,15 +20,21 @@ export const WEIGHT_STEP_KG = 2.5;
 type FieldSpec = {
   field: keyof SetFields;
   label: string;
+  /** 列の見出し（セットの一覧の上に出す） */
+  heading: string;
+  /** 空欄のときに薄く出す単位 */
+  unit: string;
   parse: (text: string) => number | null;
   format: (value: number | null) => string;
   /** ±2.5kg ボタンを付けるか */
   stepper?: boolean;
 };
 
-const weight = (label: string): FieldSpec => ({
+const weight = (label: string, heading: string): FieldSpec => ({
   field: "weightKg",
   label,
+  heading,
+  unit: "kg",
   parse: parseWeight,
   format: formatNumber,
   stepper: true,
@@ -37,32 +43,52 @@ const weight = (label: string): FieldSpec => ({
 /** 種別ごとの入力欄（F-12）。左から順に並べる */
 export const FIELDS_BY_KIND: Record<ExerciseKind, FieldSpec[]> = {
   WEIGHT: [
-    weight("重量（kg）"),
-    { field: "reps", label: "回数", parse: parseReps, format: formatNumber },
+    weight("重量（kg）", "重量"),
+    {
+      field: "reps",
+      label: "回数",
+      heading: "回数",
+      unit: "回",
+      parse: parseReps,
+      format: formatNumber,
+    },
   ],
   BODYWEIGHT: [
-    { field: "reps", label: "回数", parse: parseReps, format: formatNumber },
-    weight("加重（kg）"),
+    {
+      field: "reps",
+      label: "回数",
+      heading: "回数",
+      unit: "回",
+      parse: parseReps,
+      format: formatNumber,
+    },
+    weight("加重（kg）", "加重"),
   ],
   TIMED: [
     {
       field: "durationSeconds",
       label: "時間（秒）",
+      heading: "時間",
+      unit: "秒",
       parse: parseSeconds,
       format: formatNumber,
     },
-    weight("加重（kg）"),
+    weight("加重（kg）", "加重"),
   ],
   CARDIO: [
     {
       field: "durationSeconds",
       label: "時間（分）",
+      heading: "時間",
+      unit: "分",
       parse: parseMinutes,
       format: formatMinutes,
     },
     {
       field: "distanceM",
       label: "距離（km）",
+      heading: "距離",
+      unit: "km",
       parse: parseKilometers,
       format: formatKilometers,
     },
@@ -80,6 +106,33 @@ export type SetRowHandlers = {
   onToggleComplete: (setId: string) => Promise<string | null>;
   onRemove: (setId: string) => void;
 };
+
+/**
+ * セットの一覧の見出し行。入力欄と同じ幅で並べ、どの欄が重量・回数かを示す。
+ * 入力欄には aria-label があるので、読み上げでは見出しを読まない。
+ */
+export function SetHeader({ kind }: { kind: ExerciseKind }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex items-end gap-1 px-1 text-[11px] leading-tight text-neutral-500"
+    >
+      <span className="w-6 shrink-0 text-center">セット</span>
+      {FIELDS_BY_KIND[kind].map((spec) => (
+        <div key={spec.field} className="flex gap-1">
+          {spec.stepper && <span className="w-11 shrink-0" />}
+          <span className="w-14 shrink-0 text-center">
+            {spec.heading}
+            <br />（{spec.unit}）
+          </span>
+          {spec.stepper && <span className="w-11 shrink-0" />}
+        </div>
+      ))}
+      <span className="ml-auto w-11 shrink-0 text-center">完了</span>
+      <span className="w-11 shrink-0" />
+    </div>
+  );
+}
 
 /** セット 1 行：種別ごとの入力欄・完了・削除 */
 export function SetRow({
@@ -118,6 +171,7 @@ export function SetRow({
             )}
             <NumberInput
               label={`${prefix}の${spec.label}`}
+              unit={spec.unit}
               value={set[spec.field]}
               parse={spec.parse}
               format={spec.format}
@@ -175,12 +229,14 @@ export function SetRow({
  */
 function NumberInput({
   label,
+  unit,
   value,
   parse,
   format,
   onCommit,
 }: {
   label: string;
+  unit: string;
   value: number | null;
   parse: (text: string) => number | null;
   format: (value: number | null) => string;
@@ -192,6 +248,7 @@ function NumberInput({
       type="text"
       inputMode="decimal"
       aria-label={label}
+      placeholder={unit}
       defaultValue={format(value)}
       onBlur={(event) => {
         const next = parse(event.target.value);

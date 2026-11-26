@@ -5,7 +5,12 @@ import type { WorkoutExerciseView } from "@/client/workouts/use-workout";
 import { toShortDate } from "@/lib/date";
 import { EXERCISE_KIND_LABELS, type ExerciseKind } from "@/lib/exercise";
 import type { SetFields } from "@/lib/workout-set";
-import { FIELDS_BY_KIND, SetRow, type SetRowHandlers } from "./set-row";
+import {
+  FIELDS_BY_KIND,
+  SetHeader,
+  SetRow,
+  type SetRowHandlers,
+} from "./set-row";
 
 export type ExerciseCardHandlers = SetRowHandlers & {
   onMove: (workoutExerciseId: string, direction: -1 | 1) => void;
@@ -97,7 +102,10 @@ export function ExerciseCard({
         </p>
       )}
 
-      <ol aria-label={`${name}のセット`} className="mt-2 flex flex-col gap-1">
+      <div className="mt-2">
+        <SetHeader kind={kind} />
+      </div>
+      <ol aria-label={`${name}のセット`} className="mt-1 flex flex-col gap-1">
         {sets.map((set, index) => (
           <SetRow
             key={set.id}
