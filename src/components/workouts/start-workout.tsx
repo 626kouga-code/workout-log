@@ -1,12 +1,14 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { warmOfflinePages } from "@/client/offline-cache";
 import { findInProgressWorkout, startWorkout } from "@/client/workouts/actions";
 import { flushOutbox } from "@/client/workouts/outbox";
 import { useAutoSync } from "@/client/workouts/use-auto-sync";
+import { goTo, OfflineSafeLink } from "@/components/offline-safe-link";
+import { RECORD_PAGE } from "@/lib/offline-pages";
 
 const buttonClass =
   "flex min-h-11 w-full items-center justify-center rounded-lg bg-blue-600 px-4 font-bold text-white disabled:opacity-50";
@@ -18,6 +20,10 @@ const buttonClass =
 export function StartWorkout({ userId }: { userId: string }) {
   useAutoSync(userId);
   const router = useRouter();
+  // 記録画面を先に保存しておき、圏外になってから開いても表示できるようにする
+  useEffect(() => {
+    void warmOfflinePages();
+  }, []);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 読み込み中は undefined、記録中のものがなければ null
@@ -28,9 +34,9 @@ export function StartWorkout({ userId }: { userId: string }) {
 
   if (inProgress) {
     return (
-      <Link href={`/workouts/${inProgress.id}`} className={buttonClass}>
+      <OfflineSafeLink href={RECORD_PAGE} className={buttonClass}>
         記録を再開
-      </Link>
+      </OfflineSafeLink>
     );
   }
 
@@ -43,9 +49,9 @@ export function StartWorkout({ userId }: { userId: string }) {
           setStarting(true);
           setError(null);
           try {
-            const workout = await startWorkout();
+            await startWorkout();
             void flushOutbox();
-            router.push(`/workouts/${workout.id}`);
+            goTo(router.push, RECORD_PAGE);
           } catch {
             setError("開始できませんでした");
             setStarting(false);

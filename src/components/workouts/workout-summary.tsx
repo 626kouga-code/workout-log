@@ -1,20 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { summarizeWorkout } from "@/client/workouts/summary";
 import { useAutoSync } from "@/client/workouts/use-auto-sync";
 import { useWorkout } from "@/client/workouts/use-workout";
+import { OfflineSafeLink } from "@/components/offline-safe-link";
 import { toJstTime } from "@/lib/date";
+import { RECORD_PAGE } from "@/lib/offline-pages";
 
 /** ワークアウト完了画面（S-12）の基本：総ボリューム・時間など */
-export function WorkoutSummaryView({
-  workoutId,
-  userId,
-}: {
-  workoutId: string;
-  userId: string;
-}) {
+export function WorkoutSummaryView({ userId }: { userId: string }) {
   useAutoSync(userId);
+  const workoutId = useSearchParams().get("id");
   const view = useWorkout(workoutId);
 
   if (view === undefined) {
@@ -24,9 +21,9 @@ export function WorkoutSummaryView({
     return (
       <main className="mx-auto flex max-w-2xl flex-col items-start gap-2 px-4 py-6 text-sm">
         この端末にはこのワークアウトの記録がありません。
-        <Link href="/workouts" className="text-blue-600 underline">
+        <OfflineSafeLink href="/workouts" className="text-blue-600 underline">
           記録トップへ
-        </Link>
+        </OfflineSafeLink>
       </main>
     );
   }
@@ -74,19 +71,19 @@ export function WorkoutSummaryView({
         ))}
       </dl>
       {workout.finishedAt === null ? (
-        <Link
-          href={`/workouts/${workout.id}`}
+        <OfflineSafeLink
+          href={RECORD_PAGE}
           className="flex min-h-11 items-center justify-center rounded-lg bg-blue-600 font-bold text-white"
         >
           記録に戻る
-        </Link>
+        </OfflineSafeLink>
       ) : (
-        <Link
+        <OfflineSafeLink
           href="/workouts"
           className="flex min-h-11 items-center justify-center rounded-lg bg-blue-600 font-bold text-white"
         >
           記録トップへ
-        </Link>
+        </OfflineSafeLink>
       )}
     </main>
   );

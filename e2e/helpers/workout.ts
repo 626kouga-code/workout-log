@@ -7,7 +7,7 @@ export async function openWorkout(page: Page): Promise<void> {
     .getByRole("button", { name: "空のワークアウトを開始" })
     .or(page.getByRole("link", { name: "記録を再開" }))
     .click();
-  await expect(page).toHaveURL(/\/workouts\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL("/workouts/current");
   await expect(
     page.getByRole("heading", { level: 1, name: "記録中" }),
   ).toBeVisible();

@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
+import { clearOfflinePages } from "@/client/offline-cache";
 import type { ExerciseItem } from "@/lib/exercise";
 import type { ChangeInput } from "@/lib/validation/workout-sync";
 import type { SetFields } from "@/lib/workout-set";
@@ -92,4 +93,15 @@ export async function ensureOwner(userId: string): Promise<void> {
     }
     await localDb.meta.put({ key: "userId", value: userId });
   });
+}
+
+/**
+ * 端末に保存した記録のデータ（IndexedDB）と、保存した記録画面を消す（ログアウト時。docs/06）。
+ * 送信待ちも消えるので、呼ぶ前に送っておくこと。
+ */
+export async function clearLocalData(): Promise<void> {
+  await localDb.transaction("rw", localDb.tables, async () => {
+    await Promise.all(localDb.tables.map((table) => table.clear()));
+  });
+  await clearOfflinePages();
 }

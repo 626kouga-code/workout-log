@@ -63,7 +63,7 @@ async function openRecorder() {
   await localDb.previousRecords.put(previous);
   const workout = await startWorkout();
   await addExercise(workout.id, BENCH);
-  render(<WorkoutRecorder workoutId={workout.id} userId={USER_ID} />);
+  render(<WorkoutRecorder userId={USER_ID} />);
   return within(await screen.findByRole("region", { name: "ベンチプレス" }));
 }
 
