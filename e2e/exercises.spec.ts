@@ -1,14 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 import { signUp } from "./helpers/auth";
+import {
+  openPickerAndSearch as openPicker,
+  openWorkout,
+} from "./helpers/workout";
 
-/** 記録トップの「種目を選ぶ（試し）」から種目選択を開き、検索する */
+/** 記録画面を開き、「種目を追加」から種目選択を開いて検索する */
 async function openPickerAndSearch(page: Page, query: string) {
-  await page.goto("/workouts");
-  await page.getByRole("button", { name: "種目を選ぶ（試し）" }).click();
-  const dialog = page.getByRole("dialog", { name: "種目を選ぶ" });
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("searchbox", { name: "種目名で検索" }).fill(query);
-  return dialog;
+  await openWorkout(page);
+  return openPicker(page, query);
 }
 
 test("自分の種目を追加 → 名前を変える → 非表示 → 再表示して選べる", async ({
@@ -62,7 +62,7 @@ test("自分の種目を追加 → 名前を変える → 非表示 → 再表�
   await dialog.getByRole("button", { name: /ゴブレットスクワット/ }).click();
   await expect(dialog).toBeHidden();
   await expect(
-    page.getByText("選んだ種目：ゴブレットスクワット"),
+    page.getByRole("region", { name: "ゴブレットスクワット" }),
   ).toBeVisible();
 });
 
@@ -85,7 +85,9 @@ test("種目選択から自分の種目を追加すると、そのまま選ば�
   await dialog.getByRole("button", { name: "追加して選ぶ" }).click();
 
   await expect(dialog).toBeHidden();
-  await expect(page.getByText("選んだ種目：ハックスクワット")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "ハックスクワット" }),
+  ).toBeVisible();
 });
 
 test("ログインしていなければ、種目の管理はログイン画面へ", async ({ page }) => {

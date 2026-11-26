@@ -45,3 +45,14 @@ export function jstWeekStart(date: string): string {
     },
   );
 }
+
+/** 日時を、日本時間の時刻 "H:mm" にする */
+export function toJstTime(instant: Date): string {
+  return format(instant, "H:mm", { in: inJst });
+}
+
+/** 日付 "YYYY-MM-DD" を "M/d" にする（画面に出す短い日付） */
+export function toShortDate(date: string): string {
+  const [, month, day] = date.split("-");
+  return `${Number(month)}/${Number(day)}`;
+}
